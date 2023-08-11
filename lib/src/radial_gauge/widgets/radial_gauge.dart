@@ -11,11 +11,13 @@ class RadialGauge extends SingleChildRenderObjectWidget {
   /// For now we are only supporting single axis.
   final GaugeAxis axis;
   final Alignment alignment;
+  final TapSegmentCallback? onTapSegment;
   final bool debug;
 
   const RadialGauge({
     required this.value,
     required this.axis,
+    this.onTapSegment,
     this.radius,
     this.alignment = Alignment.center,
     this.debug = false,
@@ -31,6 +33,7 @@ class RadialGauge extends SingleChildRenderObjectWidget {
       value: value,
       radius: radius,
       debug: debug,
+      onTapSegment: onTapSegment,
     );
   }
 

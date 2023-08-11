@@ -37,6 +37,18 @@ class _RadialGaugeExamplePageState extends State<RadialGaugeExamplePage> {
               width: _controller.parentWidth,
               height: _controller.parentHeight,
               child: AnimatedRadialGauge(
+                onTapSegment: (index) {
+                  debugPrint("Cliked segment index $index");
+                  /*setState(() {
+                    _controller.segments[0] = const GaugeSegment(
+                        from: 0,
+                        to: 60.0,
+                        color: Color(0xFFD9DEEB),
+                        cornerRadius: Radius.zero,
+                        border: GaugeBorder(color: Colors.red,width: 20)
+                    );
+                  });*/
+                },
                 radius: _controller.gaugeRadius,
                 builder: _controller.hasPointer &&
                         _controller.pointerType == PointerType.needle

@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:gauge_indicator/gauge_indicator.dart';
@@ -14,6 +15,8 @@ import '../internal/radial_gauge_size_ratios.dart';
 /// Paint-related are calculations that are required to paint the gauge,
 /// For it to work the offset (provided to the paint method) needs to be
 /// provided.
+
+typedef TapSegmentCallback = void Function(int index);
 
 class RadialGaugeRenderBox extends RenderShiftedBox {
   /// Current value of the radial gauge
@@ -70,6 +73,11 @@ class RadialGaugeRenderBox extends RenderShiftedBox {
     }
   }
 
+  List<Path> _mylist = [];
+
+  List<Path> get mylist => _mylist;
+
+  late TapGestureRecognizer _recognizer;
   late RadialGaugeLayout _computedLayout;
   late RadialGaugeAxisDefinition _axisDefinition;
 
@@ -80,18 +88,45 @@ class RadialGaugeRenderBox extends RenderShiftedBox {
     required final Alignment alignment,
     required final bool debug,
     required final double? radius,
+    required final TapSegmentCallback? onTapSegment,
     RenderBox? child,
   })  : _value = value,
         _axis = axis,
         _alignment = alignment,
         _radius = radius,
         _debug = debug,
-        super(child);
+        super(child) {
+    _recognizer = TapGestureRecognizer()
+      ..onTapDown = (details) {
+        clickDetection(details.localPosition, onTapSegment);
+      };
+  }
+
+  void clickDetection(Offset offset, TapSegmentCallback? onTapSegment)
+  {
+    for (var i = 0; i < mylist.length; i++) {
+      if (mylist[i].contains(offset)) {
+        if(onTapSegment != null){
+          onTapSegment(i);
+        }
+        break;
+      }
+    }
+    markNeedsPaint();
+    markNeedsSemanticsUpdate();
+  }
 
   @override
   bool get sizedByParent => false;
 
   double get _valueProgress => (value - axis.min) / (axis.max - axis.min);
+
+  @override
+  void detach() {
+    // TODO: implement detach
+    _recognizer.dispose();
+    super.detach();
+  }
 
   @override
   void performLayout() {
@@ -190,6 +225,7 @@ class RadialGaugeRenderBox extends RenderShiftedBox {
 
     // drawing segments
 
+    _mylist = [];
     for (var i = 0; i < axisDefinition.segments.length; i++) {
       final segment = axisDefinition.segments[i];
       final paint = Paint()..style = PaintingStyle.fill;
@@ -212,8 +248,8 @@ class RadialGaugeRenderBox extends RenderShiftedBox {
       } else if (segment.color != null) {
         paint.color = segment.color!;
       }
-
       canvas.drawPath(segment.path, paint);
+      mylist.add(segment.path);
     }
 
     // drawing progress
@@ -247,6 +283,17 @@ class RadialGaugeRenderBox extends RenderShiftedBox {
     final pointer = axis.pointer;
     if (pointer != null) {
       drawPointer(canvas, axisDefinition, pointer);
+    }
+  }
+
+  @override
+  bool hitTestSelf(Offset position) => true;
+
+  @override
+  void handleEvent(PointerEvent event, BoxHitTestEntry entry) {
+    assert(debugHandleEvent(event, entry));
+    if (event is PointerDownEvent) {
+      _recognizer.addPointer(event);
     }
   }
 

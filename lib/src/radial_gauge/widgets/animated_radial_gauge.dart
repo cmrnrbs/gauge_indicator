@@ -19,6 +19,7 @@ class AnimatedRadialGauge extends ImplicitlyAnimatedWidget {
   final double? radius;
   final Widget? child;
   final GaugeLabelBuilder? builder;
+  final TapSegmentCallback? onTapSegment;
 
   const AnimatedRadialGauge({
     Key? key,
@@ -32,6 +33,7 @@ class AnimatedRadialGauge extends ImplicitlyAnimatedWidget {
     this.radius,
     this.debug = false,
     this.child,
+    this.onTapSegment,
     VoidCallback? onEnd,
   }) : super(
           key: key,
@@ -121,6 +123,7 @@ class _AnimatedRadialGaugeState
             radius: radius,
             alignment: widget.alignment,
             axis: axis,
+            onTapSegment: widget.onTapSegment,
             child: widget.builder?.call(context, widget.child, value),
           );
         },
